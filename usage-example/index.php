@@ -5,18 +5,34 @@
 include_once "../littleone.php";
 
 LittleOne::route("/", function() {
-  echo "raw index page part1..<br>";
-},
-function() {
-  echo "raw index page part2..<br>";
+  echo "Raw index page";
 });
 
-LittleOne::route("/", function() {
-  echo "raw index page part3..";
+// chan render methods
+LittleOne::route("/composed-and-filtered",
+  function() {
+      echo "Part1<br>";
+  },
+
+  function() {
+    echo "Part2";
+    
+    if(empty($_SESSION['authenticated']))
+      die();
+  },
+  
+  function() {
+      echo "Part3 - only for authenticated users.";
+  }
+);
+
+// get route params
+LittleOne::route("/cars/:carId/parts/:partId", function($carId, $partId) {
+  echo "View part {$partId} of the car {$carId}";
 });
 
 
-
+// render views inside a layout
 LittleOne::route("/profile", function() {
   LittleOne::render('./my-views/profile.php');
 });
@@ -26,26 +42,21 @@ LittleOne::route("/settings", function() {
 });
 
 
-
+// render view without the layout
 LittleOne::route("/page-without-layout", function() {
   LittleOne::render('./my-views/profile.php', ['layout' => false]);
 });
 
 
-
-LittleOne::route("/image", function() {
+// render image file
+LittleOne::route("/render-image", function() {
   $imgFile = './assets/images/pexels-photo-619948.jpeg';
   LittleOne::render($imgFile, ['type' => mime_content_type($imgFile), 'layout' => false]);
 });
 
+// render some content
 LittleOne::route("/json-content", function() {
   LittleOne::render(json_encode(['key' => 'value']), ['type' => 'application/json', 'input' => 'contents', 'layout' => false]);
-});
-
-
-
-LittleOne::route("/cars/:carId/parts/:partId", function($carId, $partId) {
-  echo "View part {$partId} of the car {$carId}";
 });
 
 
