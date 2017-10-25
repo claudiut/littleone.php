@@ -20,17 +20,9 @@ LittleOne::start();
 
 ## Extended usage examples
 ```php
-// NOTE: you have to rewrite the urls to "index.php?spine-location=$1" as in my .htaccess example
 include_once "../littleone.php";
 
-LittleOne::route("/", function() {
-  echo "Raw index page";
-});
-
-LittleOne::layout('./my-views/layout.php');
-LittleOne::start();
-
-// chan render methods
+// chain render methods
 LittleOne::route("/composed-and-filtered",
   function() {
       echo "Part1<br>";
