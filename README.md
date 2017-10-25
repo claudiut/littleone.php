@@ -1,4 +1,4 @@
-# LittleOne PHP MVC Framwork
+# LittleOne PHP MVC Framwork (In Progress)
 Just require the littleone.php and use the .htaccess file as in the usage-example/index.php and start creating your app!
 
 # Usage
