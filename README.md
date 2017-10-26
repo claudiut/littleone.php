@@ -10,8 +10,8 @@ LittleOne::route('/', function() {
   echo 'Raw index page';
 });
 
-LittleOne::route('/pages/:pageId', function($pageId) {
-  LittleOne::render('views/page.php', ['pageId' => $pageId]);
+LittleOne::route('/profile', function() {
+  LittleOne::render('views/profile.php');
 });
 
 LittleOne::layout('views/layout.php');
@@ -40,18 +40,8 @@ LittleOne::route('/composed-and-filtered',
   }
 );
 
-// get route params
-LittleOne::route('/cars/:carId/parts/:partId', function($carId, $partId) {
-  echo "View part {$partId} of the car {$carId}";
-});
-
-// render views inside a layout
-LittleOne::route('/profile', function() {
-  LittleOne::render('views/profile.php');
-});
-
-LittleOne::route('/settings', function() {
-  LittleOne::render('views/settings.php');
+LittleOne::route('/pages/:pageId', function($pageId) {
+  LittleOne::render('views/page.php', ['pageId' => $pageId]);
 });
 
 // render view without the layout
