@@ -11,20 +11,16 @@ LittleOne::route('/', function() {
 });
 
 LittleOne::route('/pages/:pageId', function($pageId) {
-  echo "Page with id {$pageId}";
+  LittleOne::render('views/page.php', ['pageId' => $pageId]);
 });
 
-LittleOne::layout('./my-views/layout.php');
+LittleOne::layout('views/layout.php');
 LittleOne::start();
 ```
 
 ## Extended usage examples
 ```php
 include_once '../littleone.php';
-
-LittleOne::route('/', function() {
-  echo 'Raw index page';
-});
 
 // chain render methods
 LittleOne::route('/composed-and-filtered',
@@ -49,22 +45,19 @@ LittleOne::route('/cars/:carId/parts/:partId', function($carId, $partId) {
   echo "View part {$partId} of the car {$carId}";
 });
 
-
 // render views inside a layout
 LittleOne::route('/profile', function() {
-  LittleOne::render('./my-views/profile.php');
+  LittleOne::render('views/profile.php');
 });
 
 LittleOne::route('/settings', function() {
-  LittleOne::render('./my-views/settings.php');
+  LittleOne::render('views/settings.php');
 });
-
 
 // render view without the layout
 LittleOne::route('/page-without-layout', function() {
-  LittleOne::render('./my-views/profile.php', ['layout' => false]);
+  LittleOne::render('views/profile.php', null, ['layout' => false]);
 });
-
 
 // render image file
 LittleOne::route('/render-image', function() {
@@ -73,11 +66,10 @@ LittleOne::route('/render-image', function() {
 
 // render some content
 LittleOne::route('/json-content', function() {
-  LittleOne::render(json_encode(['key' => 'value']), ['file' => false]);
+  LittleOne::render(json_encode(['key' => 'value']), null, ['file' => false]);
 });
 
-
-LittleOne::layout('./my-views/layout.php');
+LittleOne::layout('views/layout.php');
 LittleOne::start();
 ```
 

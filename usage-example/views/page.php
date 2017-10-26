@@ -1,0 +1,1 @@
+This is the page with the id of <strong><?php echo $locals['pageId']; ?></strong>.

@@ -38,7 +38,7 @@ class LittleOne {
     self::$layout = $layoutFilePath;
   }
 
-  public static function render($fileOrContents, $options=[]) {
+  public static function render($fileOrContents, $locals=[], $options=[]) {
     $options['layout'] = isset($options['layout']) ? $options['layout'] : true;
     $options['file']   = isset($options['file']) ? $options['file'] : true;
 
@@ -48,13 +48,15 @@ class LittleOne {
       $isPhpFile = count($parts) > 1 && array_pop($parts) === 'php';
     }
 
+    $locals = $locals && is_array($locals) ? $locals : [];
+
     $options['type'] = $options['file']
       ?
       ($isPhpFile ? 'text/html' : mime_content_type($fileOrContents))
       :
       finfo_buffer(finfo_open(), $fileOrContents, FILEINFO_MIME_TYPE);
 
-    $yield = function() use ($fileOrContents, $isPhpFile, $options) {
+    $yield = function() use ($fileOrContents, $isPhpFile, $locals, $options) {
       // if contents, echo them
       if(!$options['file']) {
         echo $fileOrContents;
