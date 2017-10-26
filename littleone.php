@@ -40,24 +40,38 @@ class LittleOne {
 
   public static function render($fileOrContents, $options=[]) {
     $options['layout'] = isset($options['layout']) ? $options['layout'] : true;
-    $options['type']   = isset($options['type']) ? $options['type'] : 'text/html';
+    $options['file']   = isset($options['file']) ? $options['file'] : true;
 
-    $yield = function() use ($fileOrContents, $options) {
-      if(isset($options['input']) && $options['input'] === 'contents')
+    $isPhpFile = false;
+    if($options['file']) {
+      $parts = explode('.', basename($fileOrContents));
+      $isPhpFile = count($parts) > 1 && array_pop($parts) === 'php';
+    }
+
+    $options['type'] = $options['file']
+      ?
+      ($isPhpFile ? 'text/html' : mime_content_type($fileOrContents))
+      :
+      finfo_buffer(finfo_open(), $fileOrContents, FILEINFO_MIME_TYPE);
+
+    $yield = function() use ($fileOrContents, $isPhpFile, $options) {
+      // if contents, echo them
+      if(!$options['file']) {
         echo $fileOrContents;
-      else {
-        $parts = explode('.', $fileOrContents);
-        if(isset($parts[1]) && $parts === 'php')
-          require($fileOrContents);
-        else
-          readfile($fileOrContents);
+        return;
       }
+
+      // if we render a file, for php require it, or else just read/serve it
+      if($isPhpFile)
+        require($fileOrContents);
+      else
+        readfile($fileOrContents);
     };
 
     header('Content-Type: ' . $options['type']);
     header('Content-Disposition: inline');
 
-    if($options['layout'])
+    if($isPhpFile && $options['layout'])
       require(self::$layout);
     else
       $yield();
@@ -68,17 +82,17 @@ class LittleOne {
     $path = self::normalizeUriPath($path);
     $uri  = self::normalizeUriPath($uri);
 
-    $paramRegexp = "/\:[a-zA-Z0-9]+/";
+    $paramRegexp = '/\:[a-zA-Z0-9]+/';
 
     preg_match($paramRegexp, $path, $m);
 
     if(empty($m))
       return [];
 
-    $pathRegexp = preg_replace($paramRegexp, "(.+)", $path);
-    $pathRegexp = str_replace("/", "\/", $pathRegexp);
+    $pathRegexp = preg_replace($paramRegexp, '(.+)', $path);
+    $pathRegexp = str_replace('/', '\/', $pathRegexp);
 
-    preg_match("/" . $pathRegexp . "/", $uri, $params);
+    preg_match('/' . $pathRegexp . '/', $uri, $params);
     array_shift($params);
 
     return $params;

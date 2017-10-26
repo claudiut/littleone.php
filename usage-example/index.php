@@ -2,61 +2,60 @@
 
 // NOTE: you have to rewrite the urls to "index.php?spine-location=$1" as in my .htaccess example
 
-include_once "../littleone.php";
+include_once '../littleone.php';
 
-LittleOne::route("/", function() {
-  echo "Raw index page";
+LittleOne::route('/', function() {
+  echo 'Raw index page';
 });
 
-// chan render methods
-LittleOne::route("/composed-and-filtered",
+// chain render methods
+LittleOne::route('/composed-and-filtered',
   function() {
-      echo "Part1<br>";
+      echo 'Part1<br>';
   },
 
   function() {
-    echo "Part2";
+    echo 'Part2';
     
     if(empty($_SESSION['authenticated']))
       die();
   },
   
   function() {
-      echo "Part3 - only for authenticated users.";
+      echo 'Part3 - only for authenticated users.';
   }
 );
 
 // get route params
-LittleOne::route("/cars/:carId/parts/:partId", function($carId, $partId) {
+LittleOne::route('/cars/:carId/parts/:partId', function($carId, $partId) {
   echo "View part {$partId} of the car {$carId}";
 });
 
 
 // render views inside a layout
-LittleOne::route("/profile", function() {
+LittleOne::route('/profile', function() {
   LittleOne::render('./my-views/profile.php');
 });
 
-LittleOne::route("/settings", function() {
+LittleOne::route('/settings', function() {
   LittleOne::render('./my-views/settings.php');
 });
 
 
 // render view without the layout
-LittleOne::route("/page-without-layout", function() {
+LittleOne::route('/page-without-layout', function() {
   LittleOne::render('./my-views/profile.php', ['layout' => false]);
 });
 
 
 // render image file
-LittleOne::route("/render-image", function() {
-  $imgFile = './assets/images/pexels-photo-619948.jpeg';
-  LittleOne::render($imgFile, ['type' => mime_content_type($imgFile), 'layout' => false]);
+LittleOne::route('/render-image', function() {
+  LittleOne::render('./assets/images/pexels-photo-619948.jpeg');
 });
 
 // render some content
-LittleOne::route("/json-content", function() {
-  LittleOne::render(json_encode(['key' => 'value']), ['type' => 'application/json', 'input' => 'contents', 'layout' => false]);
+LittleOne::route('/json-content', function() {
+  LittleOne::render(json_encode(['key' => 'value']), ['file' => false]);
 });
 
 
