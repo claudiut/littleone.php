@@ -67,7 +67,4 @@ LittleOne::start();
 - the ability to decouple the Controller methods in separate controller files
 - the Model
 - 404 Not Found page
-- eventually, the ability to specify the views and assets paths
-
-# Credits
-Inspired from ExpressJS and Laravel.
+- eventually, the ability to specify the views' and assets' server directory paths
