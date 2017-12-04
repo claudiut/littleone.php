@@ -2,8 +2,10 @@
 Just require the littleone.php and use the .htaccess file as in the usage-example/index.php and start creating your app!
 
 # Usage
+
+NOTE: you have to rewrite the urls to "index.php?spine-location=$1" as in my .htaccess example
+
 ```php
-// NOTE: you have to rewrite the urls to "index.php?spine-location=$1" as in my .htaccess example
 include_once '../littleone.php';
 
 LittleOne::route('/', function() {
