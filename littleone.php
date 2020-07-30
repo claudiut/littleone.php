@@ -1,70 +1,85 @@
 <?php
 
-class LittleOne {
-  private static $routes = [];
-  private static $layout;
+namespace LittleOne;
 
-  public static function route($path) {
-    $path = empty($path) ? '/' : $path;
-    $args = func_get_args();
-    array_shift($args);
+class LittleOne
+{
+  private $layout;
 
-    if(isset(self::$routes[$path]))
-      self::$routes[$path] = array_merge(self::$routes[$path], $args);
-    else
-      self::$routes[$path] = $args;
+  private $routes = [];
+
+  public function __construct(array $config = [])
+  {
+    if (isset($config['layout']) && is_string($config['layout'])) {
+      $this->layout = $config['layout'];
+    }
   }
 
-  public static function start() {
+  public function addRoute(string $route, ...$renderMethods)
+  {
+    $route = empty($route) ? '/' : $route;
+
+    if (isset($this->routes[$route])) {
+      $this->routes[$route] = array_merge($this->routes[$route], $renderMethods);
+    } else {
+      $this->routes[$route] = $renderMethods;
+    }
+  }
+
+  public function get(...$args)
+  {
+    $this->addRoute(...$args);
+  }
+
+  public function run()
+  {
     $uri = empty($_GET['spine-location']) || trim(htmlspecialchars($_GET['spine-location']), '/') === 'index.php'
-            ?
-          '/'
-            :
-          self::normalizeUriPath(htmlspecialchars($_GET['spine-location']));
+      ? '/'
+      : $this->normalizeUriPath(htmlspecialchars($_GET['spine-location']));
 
-    foreach(self::$routes as $path => $controlMethods) {
-      $path = self::normalizeUriPath($path);
+    foreach ($this->routes as $path => $controlMethods) {
+      // $path = $this->normalizeUriPath($path);
+      $params = $path === $uri ? [] : $this->params($path, $uri);
 
-      $params = $path === $uri ? [] : self::params($path, $uri);
-
-      if($path === $uri || !empty($params))
-        foreach($controlMethods as $method)
+      if ($path === $uri || !empty($params))
+        foreach ($controlMethods as $method)
           call_user_func_array($method, $params);
     }
   }
 
-  // VIEW
-  public static function layout($layoutFilePath) {
-    self::$layout = $layoutFilePath;
-  }
-
-  public static function render($fileOrContents, $locals=[], $options=[]) {
+  /**
+   * @param string $fileOrContents file to render
+   * @param array $locals local variables to use inside the rendered file
+   * @param array $options options such as using or not using a layout when rendering
+   */
+  public function render(string $fileOrContents, array $locals = [], array $options = []): void
+  {
     $options['layout'] = isset($options['layout']) ? $options['layout'] : true;
     $options['file']   = isset($options['file']) ? $options['file'] : true;
 
+    // check file type to tell the browser to render html or some other file type
     $isPhpFile = false;
-    if($options['file']) {
+    if ($options['file']) {
       $parts = explode('.', basename($fileOrContents));
       $isPhpFile = count($parts) > 1 && array_pop($parts) === 'php';
     }
 
+    $options['type'] = $options['file']
+      ? ($isPhpFile ? 'text/html' : mime_content_type($fileOrContents))
+      : finfo_buffer(finfo_open(), $fileOrContents, FILEINFO_MIME_TYPE);
+
+    // this is used in both 'yield' method and in the layout php file
     $locals = $locals && is_array($locals) ? $locals : [];
 
-    $options['type'] = $options['file']
-      ?
-      ($isPhpFile ? 'text/html' : mime_content_type($fileOrContents))
-      :
-      finfo_buffer(finfo_open(), $fileOrContents, FILEINFO_MIME_TYPE);
-
-    $yield = function() use ($fileOrContents, $isPhpFile, $locals, $options) {
+    $yield = function () use ($fileOrContents, $isPhpFile, $locals, $options) {
       // if contents, echo them
-      if(!$options['file']) {
+      if (!$options['file']) {
         echo $fileOrContents;
         return;
       }
 
       // if we render a file, for php require it, or else just read/serve it
-      if($isPhpFile)
+      if ($isPhpFile)
         require($fileOrContents);
       else
         readfile($fileOrContents);
@@ -73,34 +88,42 @@ class LittleOne {
     header('Content-Type: ' . $options['type']);
     header('Content-Disposition: inline');
 
-    if($isPhpFile && $options['layout'])
-      require(self::$layout);
-    else
-      $yield();
+    if ($isPhpFile && $options['layout']) {
+      // the layout will call the $yield function
+      require($this->layout);
+      return;
+    }
+
+    $yield();
   }
 
   // HELPER methods
-  public static function params($path, $uri) {
-    $path = self::normalizeUriPath($path);
-    $uri  = self::normalizeUriPath($uri);
+  public function params($route, $uri)
+  {
+    $route = $this->normalizeUriPath($route);
+    $uri  = $this->normalizeUriPath($uri);
 
+    // check if route has any params (like :paramX)
     $paramRegexp = '/\:[a-zA-Z0-9]+/';
 
-    preg_match($paramRegexp, $path, $m);
+    preg_match($paramRegexp, $route, $m);
 
-    if(empty($m))
+    if (empty($m))
       return [];
 
-    $pathRegexp = preg_replace($paramRegexp, '(.+)', $path);
-    $pathRegexp = str_replace('/', '\/', $pathRegexp);
+    // if route has params, create a regexp from it
+    // and match the request path with that regexp to extract the param values from the route
+    $routeRegexp = preg_replace($paramRegexp, '(.+)', $route);
+    $routeRegexp = str_replace('/', '\/', $routeRegexp);
 
-    preg_match('/' . $pathRegexp . '/', $uri, $params);
+    preg_match('/' . $routeRegexp . '/', $uri, $params);
     array_shift($params);
 
     return $params;
   }
 
-  public static function normalizeUriPath($uri) {
+  public function normalizeUriPath($uri)
+  {
     return '/' . trim($uri, '/');
   }
 }

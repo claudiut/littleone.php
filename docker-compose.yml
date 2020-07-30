@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  littleone-example-app:
+    image: nginx:1.19.1
+    volumes:
+      - ./usage-example:/code/src
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 1111:80
+  php:
+    image: php:7-fpm
+    volumes:
+      - ./littleone.php:/code/littleone.php
+      - ./usage-example:/code/src

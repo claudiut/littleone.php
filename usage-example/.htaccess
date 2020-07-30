@@ -1,3 +1,0 @@
-RewriteEngine On
-
-RewriteRule ^(.+)$ index.php?spine-location=$1 [QSA,L]

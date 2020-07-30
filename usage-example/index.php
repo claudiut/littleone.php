@@ -1,67 +1,45 @@
 <?php
 
-// NOTE: you have to rewrite the urls to "index.php?spine-location=$1" as in my .htaccess example
-
 include_once '../littleone.php';
 
-LittleOne::route('/', function() {
-  echo 'Raw index page';
+use \LittleOne\LittleOne;
+
+$app = new LittleOne(['layout' => 'views/layout.php']);
+
+$app->get('/', function () {
+  echo 'Some raw content';
 });
 
-LittleOne::route('/pages/:pageId', function($pageId) {
-  LittleOne::render('views/page.php', ['pageId' => $pageId]);
+$app->get('/pages/:pageId', function ($pageId) use ($app) {
+  $app->render('views/page.php', ['pageId' => $pageId]);
 });
 
 // chain render methods
-LittleOne::route('/composed-and-filtered',
-  function() {
-      echo 'Part1<br>';
+$app->get(
+  '/composed',
+  function () {
+    echo 'Public content';
   },
 
-  function() {
-    echo 'Part2';
-    
-    if(empty($_SESSION['authenticated']))
-      die();
+  function () {
+    if ($_SESSION['authenticated'] ?: false) {
+      echo '<br>User content';
+    }
   },
-  
-  function() {
-      echo 'Part3 - only for authenticated users.';
+
+  function () {
+    echo '<br>More public content.';
   }
 );
 
-// get route params
-LittleOne::route('/cars/:carId/parts/:partId', function($carId, $partId) {
-  echo "View part {$partId} of the car {$carId}";
-});
-
-
-// render views inside a layout
-LittleOne::route('/profile', function() {
-  LittleOne::render('views/profile.php');
-});
-
-LittleOne::route('/settings', function() {
-  LittleOne::render('views/settings.php');
-});
-
-
 // render view without the layout
-LittleOne::route('/page-without-layout', function() {
-  LittleOne::render('views/profile.php', null, ['layout' => false]);
+$app->get('/no-layout', function () use ($app) {
+  $app->render('views/profile.php', null, ['layout' => false]);
 });
-
 
 // render image file
-LittleOne::route('/render-image', function() {
-  LittleOne::render('./assets/images/pexels-photo-619948.jpeg');
+$app->get('/image', function () use ($app) {
+  $app->render('./assets/images/img.jpeg');
 });
 
-// render some content
-LittleOne::route('/json-content', function() {
-  LittleOne::render(json_encode(['key' => 'value']), null, ['file' => false]);
-});
-
-
-LittleOne::layout('views/layout.php');
-LittleOne::start();
+$app->run();
